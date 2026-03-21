@@ -1,45 +1,38 @@
-// Import Express.js
 const express = require('express');
-
-// Create an Express app
 const app = express();
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Set port and verify_token
 const port = process.env.PORT || 3000;
 const verifyToken = process.env.VERIFY_TOKEN;
 
-// Route for GET requests
-app.get('/', (req, res) => {
-  console.log('METHOD:', req.method)
-  console.log('URL:', req.originalUrl)
-  console.log('QUERY:', req.query)
-  console.log('HEADERS:', req.headers)
-
-  const mode = req.query['hub.mode']
-  const challenge = req.query['hub.challenge']
-  const token = req.query['hub.verify_token']
-
-  if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED')
-    return res.status(200).send(challenge)
-  }
-
-  console.log('VERIFICATION FAILED', { mode, token, verifyToken })
-  return res.sendStatus(403)
-})
-
-// Route for POST requests
-app.post('/', (req, res) => {
-  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
+app.get('/health', (req, res) => {
+  res.status(200).send('ok');
 });
 
-// Start the server
+app.get('/webhook', (req, res) => {
+  console.log('METHOD:', req.method);
+  console.log('URL:', req.originalUrl);
+  console.log('QUERY:', req.query);
+
+  const mode = req.query['hub.mode'];
+  const challenge = req.query['hub.challenge'];
+  const token = req.query['hub.verify_token'];
+
+  if (mode === 'subscribe' && token === verifyToken) {
+    console.log('WEBHOOK VERIFIED');
+    return res.status(200).send(challenge);
+  }
+
+  console.log('VERIFICATION FAILED', { mode, token, verifyToken });
+  return res.sendStatus(403);
+});
+
+app.post('/webhook', (req, res) => {
+  console.log('Webhook event:', JSON.stringify(req.body, null, 2));
+  res.sendStatus(200);
+});
+
 app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
+  console.log(`Listening on port ${port}`);
 });
