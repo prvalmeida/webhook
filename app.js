@@ -13,20 +13,23 @@ const verifyToken = process.env.VERIFY_TOKEN;
 
 // Route for GET requests
 app.get('/', (req, res) => {
-  console.log('GET query:', req.query);
+  console.log('METHOD:', req.method)
+  console.log('URL:', req.originalUrl)
+  console.log('QUERY:', req.query)
+  console.log('HEADERS:', req.headers)
 
-  const mode = req.query['hub.mode'];
-  const challenge = req.query['hub.challenge'];
-  const token = req.query['hub.verify_token'];
+  const mode = req.query['hub.mode']
+  const challenge = req.query['hub.challenge']
+  const token = req.query['hub.verify_token']
 
   if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED');
-    return res.status(200).send(challenge);
+    console.log('WEBHOOK VERIFIED')
+    return res.status(200).send(challenge)
   }
 
-  console.log('VERIFICATION FAILED', { mode, token, verifyToken });
-  return res.status(403).end();
-});
+  console.log('VERIFICATION FAILED', { mode, token, verifyToken })
+  return res.sendStatus(403)
+})
 
 // Route for POST requests
 app.post('/', (req, res) => {
